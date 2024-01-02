@@ -19,6 +19,7 @@ public class Member extends Person {
     ArrayList<Movie> recommendedMovies;
     ArrayList<Person> followings;
     ArrayList<Notification> notifications;
+    ArrayList<Forum> DMs;
 
 
     //Constructor
@@ -39,6 +40,7 @@ public class Member extends Person {
         this.recommendedMovies = new ArrayList<>();
         this.followings = new ArrayList<>();
         this.notifications = new ArrayList<>();
+        this.DMs =  new ArrayList<>();
     }
 
     // getters & setters
@@ -168,10 +170,23 @@ public class Member extends Person {
         this.notifications = notifications;
     }
 
-
-
     public void addNotification(Notification notification){
         notifications.add(notification);
+    }
+
+    public ArrayList<Forum> getDMs() {
+        return DMs;
+    }
+
+    public void setDMs(ArrayList<Forum> DMs) {
+        this.DMs = DMs;
+    }
+
+    public Forum newDM(Member receiver){
+        Forum newDM = new Forum(this.getUsername() +"-"+receiver.getUsername(), this);
+        DMs.add(newDM);
+        receiver.getDMs().add(newDM);
+        return newDM;
     }
 
 

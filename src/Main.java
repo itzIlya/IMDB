@@ -22,7 +22,7 @@ public class Main {
     public static void firstPage() {
         String action;
         while (true) {
-            System.out.println("1.Account\n2.Movies\n3.People\n4.Forums\n5.Notifications\n6.Editor panel\n7.Admin panel\nQ.Logout\nX.Exit");
+            System.out.println("1.Account\n2.Movies\n3.People\n4.Forums\n5.Notifications\n6.Editor panel\n7.Admin panel\n8.View DMs\nQ.Logout\nX.Exit");
             action = scanner.nextLine().toLowerCase();
             switch (action) {
                 case "1": {
@@ -55,6 +55,9 @@ public class Main {
                     adminPannel();
                     break;
                 }
+                case "8":{
+                    getDMs();
+                }
                 case "q": {
                     logout();
                     break;
@@ -70,6 +73,34 @@ public class Main {
             }
         }
     }
+    public static void getDMs() {
+
+        ArrayList<Forum> DMs = activeUser.getDMs();
+        int counter = 1;
+        System.out.println("#### #### #### DMs #### #### ####");
+        for (Forum f : DMs) {
+            System.out.println(counter + ". " + f.getTopic());
+            counter++;
+        }
+        System.out.println("#### #### #### #### #### #### ####");
+
+        System.out.println("Enter DM index: ");
+        String index = scanner.nextLine();
+        int i = 0;
+        try {
+            i = Integer.parseInt(index);
+            if (i > DMs.size()) {
+                throw new Exception();
+            }
+        } catch (Exception e) {
+            System.out.println("Not a valid index");
+            firstPage();
+            return;
+        }
+        forumOptions(DMs.get(i - 1));
+    }
+
+
     // Log user out
     public static void logout(){
         activeUser = guestUser;
@@ -506,10 +537,12 @@ public class Main {
     public static void forumOptions(Forum forum){
 
         while(true){
-            System.out.println("1.View Comments\n2.Report Forum\n3.Main page");
+            System.out.println("1.View Comments/Messages\n2.Report\n3.Main page");
             String inp = scanner.nextLine();
             switch (inp){
                 case "1":{
+                    boolean s = true;
+                    while(s) {
                     ArrayList<Comment> comments = forum.getComments();
                     int counter = 1;
                     for(Comment c: comments){
@@ -523,110 +556,112 @@ public class Main {
                         counter++;
                     }
                     System.out.println("--- --- --- --- --- --- --- ---");
+
                     System.out.println("1. Write new comment\n2.Report a comment\n3.Thumb a comment(Like or dislike)\n4.Go back");
                     String aciton = scanner.nextLine();
-                    switch (aciton){
-                        case "3":{
 
-                            System.out.println("Enter comment index to thumb");
-                            String index = scanner.nextLine();
-                            int i=0;
-                            try{
-                                i = Integer.parseInt(index);
-                                if (i > comments.size()){
-                                    throw new Exception();
+                        switch (aciton) {
+                            case "3": {
+
+                                System.out.println("Enter comment index to thumb");
+                                String index = scanner.nextLine();
+                                int i = 0;
+                                try {
+                                    i = Integer.parseInt(index);
+                                    if (i > comments.size()) {
+                                        throw new Exception();
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("Not a valid index");
+                                    continue;
                                 }
-                            }
-                            catch (Exception e){
-                                System.out.println("Not a valid index");
-                                continue;
-                            }
-                            System.out.println("1.Up 2.Down");
-                            ThumbDir thumbDir = scanner.nextLine().equals("1")? ThumbDir.UP : ThumbDir.DOWN;
-                            try {
-                                comments.get(i - 1).addNewThumb(new Thumb(thumbDir, activeUser));
-                            }
-                            catch (DuplicateReviewOrRatingInMovieException e){
-                                System.out.println("User has already thumbed this comment");
-                            }
-                            break;
-                        }
-                        case "1":{
-                            System.out.println("Enter the comment that you want to reply to: enter 0 if this is not a reply");
-                            String index = scanner.nextLine();
-                            int i=0;
-                            try{
-                                 i = Integer.parseInt(index);
-                                if (i > comments.size()){
-                                    throw new Exception();
+                                System.out.println("1.Up 2.Down");
+                                ThumbDir thumbDir = scanner.nextLine().equals("1") ? ThumbDir.UP : ThumbDir.DOWN;
+                                try {
+                                    comments.get(i - 1).addNewThumb(new Thumb(thumbDir, activeUser));
+                                } catch (DuplicateReviewOrRatingInMovieException e) {
+                                    System.out.println("User has already thumbed this comment");
                                 }
+                                break;
                             }
-                            catch (Exception e){
-                                System.out.println("Not a valid index");
-                                continue;
-                            }
-                            System.out.println("Enter comment body");
-                            String text = scanner.nextLine();
-                            Comment reply;
-                            if(index.equals("0")){
-                                reply = null;
-                            }
-                            else {
-                                reply = comments.get(i-1);
-                            }
-                            Comment newComment = new Comment(reply,activeUser,text);
-                            if(reply!=null && !reply.getSender().equals(newComment.getSender())){
-                                newComment.sendNotification("","",newComment,reply.getSender());
-                            }
-                            comments.add(newComment);
-                            break;
-                        }
-                        case "2":{
-                            System.out.println("Enter comment index to report");
-                            String index = scanner.nextLine();
-                            int i=0;
-                            try{
-                                i = Integer.parseInt(index);
-                                if (i > comments.size()){
-                                    throw new Exception();
+                            case "1": {
+                                System.out.println("Enter the comment that you want to reply to: enter 0 if this is not a reply");
+                                String index = scanner.nextLine();
+                                int i = 0;
+                                try {
+                                    i = Integer.parseInt(index);
+                                    if (i > comments.size()) {
+                                        throw new Exception();
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("Not a valid index");
+                                    continue;
                                 }
+                                System.out.println("Enter comment body");
+                                String text = scanner.nextLine();
+                                Comment reply;
+                                if (index.equals("0")) {
+                                    reply = null;
+                                } else {
+                                    reply = comments.get(i - 1);
+                                }
+                                Comment newComment = new Comment(reply, activeUser, text);
+                                if (reply != null && !reply.getSender().equals(newComment.getSender())) {
+                                    newComment.sendNotification("", "", newComment, reply.getSender());
+                                }
+                                comments.add(newComment);
+                                break;
                             }
-                            catch (Exception e){
-                                System.out.println("Not a valid index");
-                                continue;
-                            }
-                            Comment rep;
-                            if(index.equals("0")){
-                                rep = null;
-                            }
-                            else {
-                                rep = comments.get(i-1);
-                            }
-                            System.out.println("Enter report body");
-                            String text = scanner.nextLine();
-                            System.out.println("Why are you reporting this comment?");
-                            ArrayList<CommentReportFlag> commentReportFlags = new ArrayList<>( Arrays.asList(CommentReportFlag.values()));
-                            counter = 1;
-                            for (CommentReportFlag f : commentReportFlags) {
-                                System.out.println(counter + ". " + f);
-                                counter++;
-                            }
-                            CommentReport commentReport = new CommentReport(commentReportFlags.get(Integer.parseInt(scanner.nextLine()) - 1), activeUser,rep , text);
-                            ArrayList<Person> members = DBLists.getPersonArrayList();
-                            for(Person p : members){
-                                if (p instanceof Member){
-                                    if (((Member) p).getAccessLevel().equals(AccessLevel.ADMIN)){
-                                        commentReport.sendNotification("","",commentReport,(Member)p);
+                            case "2": {
+                                System.out.println("Enter comment index to report");
+                                String index = scanner.nextLine();
+                                int i = 0;
+                                try {
+                                    i = Integer.parseInt(index);
+                                    if (i > comments.size()) {
+                                        throw new Exception();
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("Not a valid index");
+                                    continue;
+                                }
+                                Comment rep;
+                                if (index.equals("0")) {
+                                    rep = null;
+                                } else {
+                                    rep = comments.get(i - 1);
+                                }
+                                System.out.println("Enter report body");
+                                String text = scanner.nextLine();
+                                System.out.println("Why are you reporting this comment?");
+                                ArrayList<CommentReportFlag> commentReportFlags = new ArrayList<>(Arrays.asList(CommentReportFlag.values()));
+                                counter = 1;
+                                for (CommentReportFlag f : commentReportFlags) {
+                                    System.out.println(counter + ". " + f);
+                                    counter++;
+                                }
+                                CommentReport commentReport = new CommentReport(commentReportFlags.get(Integer.parseInt(scanner.nextLine()) - 1), activeUser, rep, text);
+                                ArrayList<Person> members = DBLists.getPersonArrayList();
+                                for (Person p : members) {
+                                    if (p instanceof Member) {
+                                        if (((Member) p).getAccessLevel().equals(AccessLevel.ADMIN)) {
+                                            commentReport.sendNotification("", "", commentReport, (Member) p);
+                                        }
                                     }
                                 }
-                            }
 
-                            DBLists.addToUnhandledReports(commentReport);
-                            break;
+                                DBLists.addToUnhandledReports(commentReport);
+                                break;
+                            }
+                            case "4":
+                            {
+                                s = false;
+                                break;
+                            }
+                            default:
+                                System.out.println("Invalid option");
+                                break;
                         }
-                        default:
-                            System.out.println("Invalid option");
-                            break;
                     }
                     break;
                 }
@@ -687,7 +722,7 @@ public class Main {
         }
         if (!activeUser.getAccessLevel().equals(AccessLevel.GUEST)) {
             System.out.println("Person actions: ");
-            System.out.println("1.Follow/Unfollow\n2.Report");
+            System.out.println("1.Follow/Unfollow\n2.Report\n3.DM");
             String inp = scanner.nextLine();
             switch (inp) {
                 case "1": {
@@ -721,6 +756,17 @@ public class Main {
                         }
                     }
                     DBLists.addToUnhandledReports(personReport);
+                    break;
+                }
+                case "3":
+                {
+                    if(foundPerson instanceof Member) {
+                        forumOptions(activeUser.newDM((Member) foundPerson));
+                    }
+                    else {
+                        System.out.println("This profile does not belong to a registered Member");
+                        break;
+                    }
                 }
 
             }
